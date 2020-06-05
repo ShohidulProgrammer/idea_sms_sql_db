@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
-import '../db/model/sms_queue_model.dart';
-import '../db/utils/db_helper.dart';
-import '../http_helper/get_web_data.dart';
-import 'my_sms_sender.dart';
+import 'package:sql_db/db/model/sms_queue_model.dart';
+import 'package:sql_db/db/utils/db_helper.dart';
+import '../http_helper/get_dart.dart';
+import 'send_sms_from_gueue.dart';
 
-DatabaseHelper dbHelper = DatabaseHelper.db;
+
+DatabaseHelper db = DatabaseHelper.db;
 SmsQueueModel smsQueue;
-
-makeReadyToSendSms(
-    {@required BuildContext context, @required String url}) async {
-  var webDataList;
+makeReadyToSendSms(BuildContext context) async {
+  var smsQueueList;
+  int i;
 
   try {
-    //  get data from web url
-    webDataList = await getDataFromWeb();
+    smsQueueList = await getDataFromWeb();
   } catch (e) {
     print('\nnetwork error: $e');
   }
 
   // insert queue from web url
   try {
-    for (int i = 0; i < webDataList.length; i++) {
-      await dbHelper.saveQItem(SmsQueueModel(
-          id: webDataList[i]['id'],
-          mobileNo: webDataList[i]['mobileNo'],
-          userName: webDataList[i]['userName'],
-          message: webDataList[i]['massage']));
+    for (i = 0; i < smsQueueList.length; i++) {
+      await db.insertQueueItem(SmsQueueModel(
+          id: smsQueueList[i]['id'],
+          mobileNo: smsQueueList[i]['mobileNo'],
+          userName: smsQueueList[i]['userName'],
+          message: smsQueueList[i]['massage']));
     }
   } catch (e) {
     print('\nsmsQue insertion error: $e');
@@ -33,15 +32,10 @@ makeReadyToSendSms(
 
   // send sms from queue table
   try {
-    // get all data from queue table
-    final List<SmsQueueModel> smsQueues = await dbHelper.getAllQueues();
-    // send sms each mobile no
-    smsQueues.forEach((que) {
-      MySmsSender.sendSms(que: que);
-    });
-
-//    sendSmsFromQueue(context);
+    sendSmsFromQueue(context);
   } catch (e) {
-    print('\nqueue data read error: $e');
+    print('\nsms send error: $e');
   }
+
+  print('\nafter send sms from que the last line');
 }

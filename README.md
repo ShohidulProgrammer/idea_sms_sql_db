@@ -1,4 +1,4 @@
-# idea_sms
+# sql_db
 
 A new Flutter project.
 

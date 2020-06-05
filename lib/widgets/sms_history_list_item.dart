@@ -2,24 +2,42 @@ import 'package:flutter/material.dart';
 import '../pages/sms_history_detals.dart';
 import '../utilities/date_formatter.dart' as duration;
 
-class SmsHistoryItemWidget extends StatelessWidget {
+class SmsHistoryListItem extends StatefulWidget {
   final smsHistory;
+  final smsDao;
 
-  SmsHistoryItemWidget({Key key, @required this.smsHistory}) : super(key: key);
+  SmsHistoryListItem(
+      {Key key, @required this.smsHistory, @required this.smsDao})
+      : super(key: key);
+
+  @override
+  _SmsHistoryListItemState createState() => _SmsHistoryListItemState();
+}
+
+class _SmsHistoryListItemState extends State<SmsHistoryListItem> {
+  bool successfullySend;
+
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      successfullySend = widget.smsHistory.send;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var parsedDate = DateTime.parse(smsHistory.date);
+    var parsedDate = DateTime.parse(widget.smsHistory.date);
     String date = duration.formateDate(parsedDate);
     return InkWell(
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => SmsHistoryDetails(
-                      mobile: smsHistory.mobileNo,
-                    ))),
+                builder: (context) =>
+                    SmsHistoryDetails(smsItem: widget.smsHistory,date: date,))),
         child: ListTile(
-          leading: smsHistory.send
+          leading: successfullySend
               ? Icon(
                   Icons.check,
                   color: Colors.green,
@@ -28,12 +46,17 @@ class SmsHistoryItemWidget extends StatelessWidget {
                   Icons.sms_failed,
                   color: Colors.red,
                 ),
-          title: Text(smsHistory.mobileNo),
-          subtitle: Text(smsHistory.userName ?? ''),
+          title: Text(widget.smsHistory.mobileNo),
+          subtitle: Text(widget.smsHistory.userName ?? ''),
           trailing: Text(
-            smsHistory.date == '2018,9,15' ? '' : date,
+            widget.smsHistory.date == '2018,9,15'
+                ? ''
+                : date,
+//              widget.smsHistory.date
             style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ));
   }
 }
+
+
