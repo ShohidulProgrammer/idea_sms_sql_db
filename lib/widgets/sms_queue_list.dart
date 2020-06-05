@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:provider/provider.dart';
+import 'package:sql_db/db/model/sms_queue_model.dart';
+import 'package:sql_db/db/utils/db_helper.dart';
 import 'package:sql_db/utilities/list_separator.dart';
 import 'package:sql_db/widgets/snackbar.dart';
-import '../data/moor_database.dart';
 import '../widgets/sms_queue_list_item.dart';
 
 class SmsQueueList extends StatefulWidget {
@@ -12,7 +12,6 @@ class SmsQueueList extends StatefulWidget {
 }
 
 class _SmsQueueListState extends State<SmsQueueList> {
-  // bool successfulySend;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,51 +19,57 @@ class _SmsQueueListState extends State<SmsQueueList> {
     );
   }
 
-  StreamBuilder<List<SmsQueue>> _buildSmsQueueList(BuildContext context) {
-    final dao = Provider.of<SmsQueueDao>(context);
-    return StreamBuilder(
-      stream: dao.watchAllSmsQueue(),
-      builder: (context, AsyncSnapshot<List<SmsQueue>> snapshot) {
-        final smsQueues = snapshot.data ?? List();
-        return ListView.separated(
-          itemCount: smsQueues.length ?? 0,
-          itemBuilder: (_, int index) {
-            final smsQueue = smsQueues[index];
-            return queueListItem(
-              smsQueue: smsQueue,
-              dao: dao,
-              child: SmsQueueListItem(
-                smsQueue: smsQueue,
-                smsDao: dao,
-              ),
-            );
-          },
-          separatorBuilder: (BuildContext context, int index) =>
-              klistSparatorDivider(),
-        );
+  Widget _buildSmsQueueList(BuildContext context) {
+    DatabaseHelper db = DatabaseHelper.db;
+
+    return FutureBuilder<List<SmsQueueModel>>(
+      future: db.getAllQueues(),
+      builder: (context, AsyncSnapshot<List<SmsQueueModel>> snapshot) {
+        if (snapshot.hasData) {
+          return ListView.separated(
+            itemCount: snapshot.data.length,
+            itemBuilder: (_, int index) {
+              SmsQueueModel smsQueueItem = snapshot.data[index];
+              return queueListItem(
+                smsQueue: smsQueueItem,
+                child: SmsQueueListItem(
+                  smsQueue: smsQueueItem,
+                  smsDao: db,
+                ),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) =>
+                klistSparatorDivider(),
+          );
+        } else if (snapshot.hasError) {
+          return Text('There was an error');
+        } else {
+          // return Center(child: CircularProgressIndicator());
+          return Text('No Value yet');
+        }
       },
     );
   }
 
-// sms history list item
-  Widget queueListItem({SmsQueue smsQueue, SmsQueueDao dao, Widget child}) {
+  // sms history list item
+  Slidable queueListItem(
+      {SmsQueueModel smsQueue, DatabaseHelper dao, Widget child}) {
     return Slidable(
       child: child,
       actionPane: SlidableBehindActionPane(),
       secondaryActions: <Widget>[
         //  delete List  item
         IconSlideAction(
+            key: UniqueKey(),
             caption: 'Delete',
             color: Colors.red,
             icon: Icons.delete,
             onTap: () {
-              dao.deleteSmsQueue(smsQueue);
+              dao.deleteMassageItem(
+                  table: dao.queueTable, mobile: smsQueue.mobileNo);
               mySnackBar(context: context, msg: 'Sms Successfully Deleted!');
-            }
-            // snackBar(
-            //     context: context,
-            //     msg: '${smsQueue.mobileNo}  is Successfully Deleted '),
-            ),
+              setState(() {});
+            }),
       ],
     );
   }

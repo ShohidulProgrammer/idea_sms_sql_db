@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:provider/provider.dart';
-import 'package:sql_db/data/moor_database.dart';
+import 'package:sql_db/db/model/sms_history_model.dart';
+import 'package:sql_db/db/utils/db_helper.dart';
 import 'package:sql_db/utilities/list_separator.dart';
 import 'package:sql_db/widgets/sms_history_list_item.dart';
 import 'package:sql_db/widgets/snackbar.dart';
@@ -12,8 +12,6 @@ class SmsHistoryList extends StatefulWidget {
 }
 
 class _SmsHistoryListState extends State<SmsHistoryList> {
-  // bool successfulySend;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -21,70 +19,57 @@ class _SmsHistoryListState extends State<SmsHistoryList> {
     );
   }
 
-  StreamBuilder<List<SmsHistorie>> _buildSmsHistoryList(BuildContext context) {
-    final SmsHistoryDao dao = Provider.of<SmsHistoryDao>(context);
-    return StreamBuilder(
-      // stream: successfulySend
-      //     ? dao.watchSendSmsHistory(success: successfulySend)
-      //     : dao.watchAllSmsHistoryOrderByDate(),
-      stream: dao.watchAllSmsHistoryOrderByDate(),
+  Widget _buildSmsHistoryList(BuildContext context) {
+    DatabaseHelper db = DatabaseHelper.db;
 
-      builder: (context, AsyncSnapshot<List<SmsHistorie>> snapshot) {
-        final smsHistories = snapshot.data ?? List();
-
-        return smsHistories == null
-            ? Center(
-                child: Column(
-                children: <Widget>[
-                  Text('No SMS History'),
-                  CircularProgressIndicator(),
-                ],
-              ))
-            : ListView.separated(
-                itemCount: smsHistories.length,
-                itemBuilder: (_, int index) {
-                  final smsHistory = smsHistories[index];
-                  return historyListItem(
-                    smsHistory: smsHistory,
-                    child: SmsHistoryListItem(
-                      smsHistory: smsHistory,
-                      smsDao: dao,
-                    ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) =>
-                    klistSparatorDivider(),
-              );
-      },
-    );
+    return FutureBuilder<List<SmsHistoryModel>>(
+        future: db.getAllHistories(),
+        builder: (context, AsyncSnapshot<List<SmsHistoryModel>> snapshot) {
+          if (snapshot.hasData) {
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (_, int index) {
+                SmsHistoryModel smsHistoryItem = snapshot.data[index];
+                return queueListItem(
+                  smsHistory: smsHistoryItem,
+                  child: SmsHistoryListItem(
+                    smsHistory: smsHistoryItem,
+                    smsDao: db,
+                  ),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) =>
+                  klistSparatorDivider(),
+            );
+          } else if (snapshot.hasError) {
+            debugPrint('Snap Shot Data: ${snapshot.data}');
+            return Center(child: Text('There was an error'));
+          } else {
+            // return Center(child: CircularProgressIndicator());
+            return Center(child: Text('No Value yet'));
+          }
+        });
   }
 
 // sms history list item
-  Widget historyListItem({
-    SmsHistorie smsHistory,
-    SmsHistoryDao dao,
-    Widget child,
-  }) {
+  Widget queueListItem(
+      {SmsHistoryModel smsHistory, DatabaseHelper dao, Widget child}) {
     return Slidable(
       child: child,
       actionPane: SlidableBehindActionPane(),
       secondaryActions: <Widget>[
         //  delete List  item
         IconSlideAction(
+            key: UniqueKey(),
             caption: 'Delete',
             color: Colors.red,
             icon: Icons.delete,
             onTap: () {
-              dao.deleteSmsHistory(smsHistory);
-              // dao.executor['DELETE FROM SmsHistories;'];
+              dao.deleteItem(table: dao.historyTable, id: smsHistory.id);
               mySnackBar(context: context, msg: 'Sms Successfully Deleted!');
-            }
-            // mySnackBar(
-            //     context: context,
-            //     msg: '${smsHistory.mobileNo} is Successfully Deleted '),
-            ),
+              setState(() {});
+            }),
       ],
     );
   }
-  // check send switch
 }

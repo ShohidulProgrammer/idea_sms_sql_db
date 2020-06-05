@@ -4,7 +4,7 @@ class Bubble extends StatelessWidget {
   final bool isMe;
   final String message;
 
-  Bubble({this.message, this.isMe});
+  Bubble({@required this.message , this.isMe});
 
   Widget build(BuildContext context) {
     return Container(

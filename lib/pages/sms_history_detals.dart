@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sql_db/data/db_helper/delete_history.dart';
-import 'package:sql_db/sms_helper/resend_sms.dart';
+import 'package:sql_db/db/utils/db_helper.dart';
+import 'package:sql_db/sms_helper/my_sms_sender.dart';
 import 'package:sql_db/utilities/text_style.dart';
 import 'package:sql_db/widgets/snackbar.dart';
 import '../widgets/massage_buble.dart';
@@ -8,10 +8,10 @@ import '../utilities/date_formatter.dart' as duration;
 
 class SmsHistoryDetails extends StatefulWidget {
   final smsItem;
-  final date;
+  final String date;
 
   // final DateTime now = smsItem.date;
-  SmsHistoryDetails({@required this.smsItem, this.date});
+  SmsHistoryDetails({@required this.smsItem, this.date = ""});
 
   @override
   _SmsHistoryDetailsState createState() => _SmsHistoryDetailsState();
@@ -30,6 +30,7 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
 
   @override
   Widget build(BuildContext context) {
+    DatabaseHelper dbHelper = DatabaseHelper.db;
     return Scaffold(
       appBar: AppBar(
         elevation: 0.4,
@@ -43,17 +44,12 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
           IconButton(
             icon: Icon(Icons.delete_forever),
             onPressed: () {
-              deleteHistorySms(
-                context: context,
-                id: widget.smsItem.id,
-                mobile: widget.smsItem.mobileNo,
-              );
+              dbHelper.deleteMassageItem(
+                  table: dbHelper.historyTable,
+                  mobile: widget.smsItem.mobileNo);
               Navigator.pop(context);
               mySnackBar(
                   context: context, msg: 'Massage successfully deleted!');
-              // Scaffold.of(context).showSnackBar(SnackBar(
-              //   content: Text('Massage successfully deleted!'),
-              // ),);
             },
           ),
         ],
@@ -76,10 +72,7 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
                               child: Column(
                                 children: <Widget>[
                                   Text(
-                                    widget.date == '2018,9,15'
-                                        ? ''
-                                        : duration
-                                            .formateDate(widget.smsItem.date),
+                                    widget.date,
                                     style: TextStyle(
                                         color: Colors.grey, fontSize: 12),
                                   ),
@@ -92,18 +85,9 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
                                             ? SizedBox(
                                                 width: 0.0,
                                                 height: 0.0,
-                                              ) // Text('Recieved')
+                                              )
                                             : IconButton(
                                                 onPressed: () {
-                                                  smsResend(
-                                                    context,
-                                                    id: widget.smsItem.id,
-                                                    mobile:
-                                                        widget.smsItem.mobileNo,
-                                                    massage:
-                                                        widget.smsItem.massage,
-                                                  );
-
                                                   mySnackBar(
                                                       context: context,
                                                       msg:
@@ -111,7 +95,6 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
                                                   setState(() {
                                                     successfulySend =
                                                         widget.smsItem.send;
-                                                    // SmsHistoryList();
                                                   });
                                                 },
                                                 tooltip: 'Resend Sms',
@@ -124,7 +107,7 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
                                       Expanded(
                                         flex: 10,
                                         child: Bubble(
-                                          message: widget.smsItem.massage,
+                                          message: widget.smsItem.message ,
                                           isMe: false,
                                         ),
                                       ),
@@ -139,7 +122,6 @@ class _SmsHistoryDetailsState extends State<SmsHistoryDetails> {
               ],
             ),
           ),
-          // writingChat
         ],
       ),
     );
