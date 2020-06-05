@@ -4,7 +4,7 @@ class Bubble extends StatelessWidget {
   final bool isMe;
   final String message;
 
-  Bubble({this.message, this.isMe});
+  Bubble({@required this.message , this.isMe});
 
   Widget build(BuildContext context) {
     return Container(
@@ -63,12 +63,14 @@ class Bubble extends StatelessWidget {
                   crossAxisAlignment:
                       isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   children: <Widget>[
+//                    Text('20-10-19'),
                     Text(
                       message,
                       textAlign: isMe ? TextAlign.end : TextAlign.start,
-                      style: TextStyle(
-                        color: isMe ? Colors.white : Colors.grey,
-                      ),
+//                      style: TextStyle(
+////                        color: isMe ? Colors.white : Colors.blueGrey,
+////                        color: isMe ? Colors.white : Colors.grey,
+//                      ),
                     )
                   ],
                 ),
