@@ -27,6 +27,17 @@ class _HomePageState extends State<HomePage> {
               )
             ]),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // String message = "This is a test message!";
+          // List<String> recipents = ["01944", "01768094459"];
+          // sendMulipleSms(message, recipents);
+        },
+        child: Icon(
+          Icons.add,
+        ),
+        backgroundColor: Colors.pink,
+      ),
     );
   }
 }

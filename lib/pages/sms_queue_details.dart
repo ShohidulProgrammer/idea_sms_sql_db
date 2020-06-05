@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sql_db/db/utils/db_helper.dart';
+import 'package:provider/provider.dart';
+import 'package:sql_db/data/moor_database.dart';
 import 'package:sql_db/utilities/text_style.dart';
 import 'package:sql_db/widgets/snackbar.dart';
 import '../widgets/massage_buble.dart';
@@ -14,9 +15,9 @@ class QueueSmsDetails extends StatefulWidget {
 }
 
 class _QueueSmsDetailsState extends State<QueueSmsDetails> {
-  DatabaseHelper db = DatabaseHelper.db;
   @override
   Widget build(BuildContext context) {
+    final SmsQueueDao dao = Provider.of<SmsQueueDao>(context);
     var smsItem = widget.smsQueItem;
     return Scaffold(
       appBar: AppBar(
@@ -31,11 +32,14 @@ class _QueueSmsDetailsState extends State<QueueSmsDetails> {
           IconButton(
             icon: Icon(Icons.delete_forever),
             onPressed: () {
-              db.deleteAll(table: db.queueTable);
-              Navigator.pop(context);
-              mySnackBar(
-                  context: context, msg: 'All Sms Successfully Deleted!');
-
+              dao.deleteSmsQueue(smsItem);
+              // deleteQueueSms(
+              //   context: context,
+              //   id: widget.smsQueItem.id,
+              //   mobile: widget.smsQueItem.mobileNo,
+              // );
+              mySnackBar(context: context, msg: 'Sms Successfully Deleted!');
+              // Navigator.pop(context);
               setState(() {
                 smsItem = widget.smsQueItem;
               });
@@ -61,7 +65,7 @@ class _QueueSmsDetailsState extends State<QueueSmsDetails> {
                               child: Column(
                                 children: <Widget>[
                                   Bubble(
-                                    message: smsItem.message,
+                                    message: smsItem.massage,
                                     isMe: false,
                                   ),
                                 ],

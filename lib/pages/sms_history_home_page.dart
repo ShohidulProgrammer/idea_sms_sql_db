@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../sms_helper/make_ready_to_send_sms.dart';
 import '../widgets/sms_history_list.dart';
 
 class SmsHistoryHomePage extends StatefulWidget {
@@ -29,7 +30,7 @@ class _SmsHistoryHomePageState extends State<SmsHistoryHomePage> {
       ),
       body: SmsHistoryList(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {}, // makeReadyToSendSms(context),
+        onPressed: () => makeReadyToSendSms(context),
         child: Icon(
           Icons.add,
         ),

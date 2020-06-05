@@ -5,37 +5,37 @@ import '../utilities/date_formatter.dart' as duration;
 class SmsHistoryListItem extends StatefulWidget {
   final smsHistory;
   final smsDao;
-
+  // final key;
   SmsHistoryListItem(
       {Key key, @required this.smsHistory, @required this.smsDao})
       : super(key: key);
+  // SmsHistoryListItem(this.smsHistory, this.smsDao, this.key) : super(key: key);
 
   @override
   _SmsHistoryListItemState createState() => _SmsHistoryListItemState();
 }
 
 class _SmsHistoryListItemState extends State<SmsHistoryListItem> {
+  // bool successfulySend = false;
   bool successfullySend;
-
 
   @override
   void initState() {
     super.initState();
     setState(() {
+      // widget.smsHistory.send = true;
       successfullySend = widget.smsHistory.send;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    var parsedDate = DateTime.parse(widget.smsHistory.date);
-    String date = duration.formateDate(parsedDate);
     return InkWell(
+        // onTap: () => Navigator.pushNamed(context, 'sms_history_details'),  
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    SmsHistoryDetails(smsItem: widget.smsHistory,date: date,))),
+                builder: (context) => SmsHistoryDetails(smsItem: widget.smsHistory))),
         child: ListTile(
           leading: successfullySend
               ? Icon(
@@ -51,12 +51,9 @@ class _SmsHistoryListItemState extends State<SmsHistoryListItem> {
           trailing: Text(
             widget.smsHistory.date == '2018,9,15'
                 ? ''
-                : date,
-//              widget.smsHistory.date
+                : duration.formateDate(widget.smsHistory.date),
             style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
+          ), // Text(widget.smsHistory.date?.toString() ?? ''),
         ));
   }
 }
-
-

@@ -34,13 +34,25 @@ class _SmsQueueHomePageState extends State<SmsQueueHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(
         title: Text('Sms Queue List'),
+        // actions: <Widget>[
+        //   IconButton(
+        //     icon: Icon(Icons.delete_forever),
+        //     onPressed: () {
+        //       int i = 1;
+        //       deleteQueueSms(context: context, id: 2, mobile: '01944700');
+        //     },
+        //   ),
+        // ],
       ),
+      // body: SmsList(),
       body: SmsQueueList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           makeReadyToSendSms(context);
+          // mySnackBar(context: context, msg: 'Try to Ready for Sending Sms');
         },
         child: Icon(
           Icons.add,
